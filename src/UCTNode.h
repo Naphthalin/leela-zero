@@ -84,6 +84,10 @@ public:
     void virtual_loss_undo();
     void update(float eval);
     float get_eval_lcb(int color) const;
+    // relevance is managed by parent
+    double get_relevance_betamcts() const;
+    void set_relevance_betamcts(double relevance);
+
 
     // Defined in UCTNodeRoot.cpp, only to be called on m_root in UCTSearch
     void randomize_first_proportionally();
@@ -120,6 +124,8 @@ private:
     // UCT
     std::atomic<std::int16_t> m_virtual_loss{0};
     std::atomic<int> m_visits{0};
+    // effective visits for betamcts
+    std::atomic<double> m_visits_betamcts{0.0};
     // UCT eval
     float m_policy;
     // Original net eval for this node (not children).
@@ -129,7 +135,11 @@ private:
     // at low visits.
     std::atomic<float> m_squared_eval_diff{1e-4f};
     std::atomic<double> m_blackevals{0.0};
+    // effective blackeval for betamcts
+    std::atomic<double> m_blackevals_betamcts{0.0};
     std::atomic<Status> m_status{ACTIVE};
+    // relevance for parent's eval
+    std::atomic<double> m_relevance_betamcts{1.0};
 
     // m_expand_state acts as the lock for m_children.
     // see manipulation methods below for possible state transition

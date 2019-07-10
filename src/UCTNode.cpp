@@ -246,6 +246,15 @@ int UCTNode::get_visits() const {
     return m_visits;
 }
 
+double UCTNode::get_relevance_betamcts() const {
+    return m_relevance_betamcts;
+}
+
+void UCTNode::set_relevance_betamcts(double relevance) {
+    m_relevance_betamcts = relevance;
+}
+
+
 float UCTNode::get_eval_lcb(int color) const {
     // Lower confidence bound of winrate.
     auto visits = get_visits();
@@ -479,4 +488,3 @@ void UCTNode::wait_expanded() {
 #endif
     assert(v == ExpandState::EXPANDED);
 }
-
