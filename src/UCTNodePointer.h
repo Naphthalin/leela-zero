@@ -134,6 +134,11 @@ public:
     // these can only be called if it is an inflated pointer
     float get_eval(int tomove) const;
     float get_eval_lcb(int color) const;
+    double get_eval_betamcts(int tomove) const;
+    double get_blackevals_betamcts() const;
+    double get_visits_betamcts() const;
+    double get_relevance_betamcts() const;
+
 };
 
 #endif

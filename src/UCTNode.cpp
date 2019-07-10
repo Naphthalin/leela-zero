@@ -213,6 +213,30 @@ void UCTNode::update(float eval) {
     // Welford's online algorithm for calculating variance.
     auto delta = old_delta * new_delta;
     atomic_add(m_squared_eval_diff, delta);
+
+    double visits_children = 0.0;
+    double blackwins_children = 0.0;
+
+    for (auto& child : m_children) {
+        if (!child.valid()) {
+            continue;
+        }
+
+        if (child.get_visits() > 0) {
+            auto child_blackeval = child.get_blackevals_betamcts();
+            auto child_visits = child.get_visits_betamcts();
+            auto child_relevance = child.get_relevance_betamcts();
+            visits_children += child_relevance * child_visits;
+            blackwins_children += child_relevance * child_visits * child_blackeval;
+
+        } else {
+
+        }
+
+        if (visits_children > 0.0) {
+            m_blackevals_betamcts = blackwins_children / visits_children;
+        }
+    }
 }
 
 bool UCTNode::has_children() const {
@@ -254,6 +278,27 @@ void UCTNode::set_relevance_betamcts(double relevance) {
     m_relevance_betamcts = relevance;
 }
 
+double UCTNode::get_blackevals_betamcts() const {
+    return m_blackevals_betamcts;
+}
+
+double UCTNode::get_visits_betamcts() const {
+    return m_visits_betamcts;
+}
+
+double UCTNode::get_eval_betamcts(int tomove, int virtual_loss) const {
+    auto visits = get_visits() + virtual_loss;
+    assert(visits > 0);
+    auto blackeval = get_blackevals_betamcts();
+    if (tomove == FastBoard::WHITE) {
+        blackeval += static_cast<double>(virtual_loss);
+    }
+    auto eval = static_cast<float>(blackeval / double(visits));
+    if (tomove == FastBoard::WHITE) {
+        eval = 1.0f - eval;
+    }
+    return eval;
+}
 
 float UCTNode::get_eval_lcb(int color) const {
     // Lower confidence bound of winrate.
@@ -341,7 +386,9 @@ UCTNode* UCTNode::uct_select_child(int color, bool is_root) {
             // if we can avoid so, because we'd block on it.
             winrate = -1.0f - fpu_reduction;
         } else if (child.get_visits() > 0) {
-            winrate = child.get_eval(color);
+            // use get_eval_betamcts instead
+            // winrate = child.get_eval(color);
+            winrate = child.get_eval_betamcts(color);
         }
         const auto psa = child.get_policy();
         const auto denom = 1.0 + child.get_visits();

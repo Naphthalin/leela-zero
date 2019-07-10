@@ -156,6 +156,34 @@ float UCTNodePointer::get_eval(int tomove) const {
     return read_ptr(v)->get_eval(tomove);
 }
 
+double UCTNodePointer::get_eval_betamcts(int tomove) const {
+    // this can only be called if it is an inflated pointer
+    auto v = m_data.load();
+    assert(is_inflated(v));
+    return read_ptr(v)->get_eval_betamcts(tomove);
+}
+
+double UCTNodePointer::get_blackevals_betamcts() const {
+    // this can only be called if it is an inflated pointer
+    auto v = m_data.load();
+    assert(is_inflated(v));
+    return read_ptr(v)->get_blackevals_betamcts();
+}
+
+double UCTNodePointer::get_visits_betamcts() const {
+    // this can only be called if it is an inflated pointer
+    auto v = m_data.load();
+    assert(is_inflated(v));
+    return read_ptr(v)->get_visits_betamcts();
+}
+
+double UCTNodePointer::get_relevance_betamcts() const {
+    // this can only be called if it is an inflated pointer
+    auto v = m_data.load();
+    assert(is_inflated(v));
+    return read_ptr(v)->get_relevance_betamcts();
+}
+
 int UCTNodePointer::get_move() const {
     auto v = m_data.load();
     if (is_inflated(v)) return read_ptr(v)->get_move();

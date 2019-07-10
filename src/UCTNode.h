@@ -87,7 +87,10 @@ public:
     // relevance is managed by parent
     double get_relevance_betamcts() const;
     void set_relevance_betamcts(double relevance);
-
+    // parent needs access to m_blackevals_betamcts and m_visits_betamcts
+    double get_eval_betamcts(int tomove, int virtual_loss = 0) const;
+    double get_blackevals_betamcts() const;
+    double get_visits_betamcts() const;
 
     // Defined in UCTNodeRoot.cpp, only to be called on m_root in UCTSearch
     void randomize_first_proportionally();
