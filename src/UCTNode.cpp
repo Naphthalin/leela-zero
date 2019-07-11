@@ -243,17 +243,19 @@ void UCTNode::update_betamcts() {
 }
 
 void UCTNode::set_children_relevance_betamcts(int tomove) {
+    // trust_factor into single NN evals
+    double trust_factor = 1.0;
+    double percentile = 0.0;
+
     double max_relevance = 0.0;
-    double alpha = 0.0;
-    double beta = 0.0;
-    if (tomove == FastBoard::WHITE) {
-        alpha = 1.0 + m_blackevals_betamcts * m_visits_betamcts;
-        beta = 1.0 + (1.0 - m_blackevals_betamcts) * m_visits_betamcts;
+    double alpha = 1.0 + m_blackevals_betamcts * m_visits_betamcts * trust_factor;
+    double beta = 1.0 + (1.0 - m_blackevals_betamcts) * m_visits_betamcts * trust_factor;
+    double parent_eval_cutoff = 0.0;
+    if (tomove == FastBoard::BLACK) {
+        parent_eval_cutoff = boost::math::ibeta_inv(alpha, beta, percentile);
     } else {
-        alpha = 1.0 + (1.0 - m_blackevals_betamcts) * m_visits_betamcts;
-        beta = 1.0 + m_blackevals_betamcts * m_visits_betamcts;
+        parent_eval_cutoff = boost::math::ibeta_inv(alpha, beta, 1.0 - percentile);
     }
-    double parent_eval_cutoff = boost::math::ibeta_inv(alpha, beta, 0.5);
 
     for (auto& child : m_children) {
         if (!child.valid()) {
@@ -261,16 +263,16 @@ void UCTNode::set_children_relevance_betamcts(int tomove) {
         }
 
         if (child.get_visits() > 0) {
+            double child_relevance = 0.0;
             auto child_blackeval = child.get_blackevals_betamcts();
             auto child_visits = child.get_visits_betamcts();
-            if (tomove == FastBoard::WHITE) {
-                alpha = 1.0 + (1.0 - child_blackeval) * child_visits;
-                beta = 1.0 + child_blackeval * child_visits;
+            alpha = 1.0 + child_blackeval * child_visits * trust_factor;
+            beta = 1.0 + (1.0 - child_blackeval) * child_visits * trust_factor;
+            if (tomove == FastBoard::BLACK) {
+                child_relevance = (1.0 - boost::math::ibeta(alpha, beta, parent_eval_cutoff)) / (1.0 - percentile);
             } else {
-                alpha = 1.0 + child_blackeval * child_visits;
-                beta = 1.0 + (1.0 - child_blackeval) * child_visits;
+                child_relevance = boost::math::ibeta(alpha, beta, parent_eval_cutoff) / (1.0 - percentile);
             }
-            auto child_relevance = boost::math::ibeta(alpha, beta, parent_eval_cutoff);
 
             child.set_relevance_betamcts(child_relevance);
             if (max_relevance < child_relevance) {
