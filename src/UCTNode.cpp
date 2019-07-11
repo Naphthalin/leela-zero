@@ -232,7 +232,7 @@ void UCTNode::update_betamcts(float eval) {
             auto child_blackeval = child.get_blackevals_betamcts();
             auto child_visits = child.get_visits_betamcts();
             auto child_relevance = child.get_relevance_betamcts();
-            child_relevance = 1.0;
+//            child_relevance = 1.0;
             visits_children += child_relevance * child_visits;
             blackwins_children += child_relevance * child_visits * child_blackeval;
 
