@@ -184,6 +184,13 @@ double UCTNodePointer::get_relevance_betamcts() const {
     return read_ptr(v)->get_relevance_betamcts();
 }
 
+void UCTNodePointer::set_relevance_betamcts(double relevance) const {
+    // this can only be called if it is an inflated pointer
+    auto v = m_data.load();
+    assert(is_inflated(v));
+    return read_ptr(v)->set_relevance_betamcts(relevance);
+}
+
 int UCTNodePointer::get_move() const {
     auto v = m_data.load();
     if (is_inflated(v)) return read_ptr(v)->get_move();

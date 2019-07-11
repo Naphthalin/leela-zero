@@ -138,6 +138,7 @@ public:
     double get_blackevals_betamcts() const;
     double get_visits_betamcts() const;
     double get_relevance_betamcts() const;
+    void set_relevance_betamcts(double relevance) const;
 
 };
 

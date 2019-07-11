@@ -266,6 +266,7 @@ SearchResult UCTSearch::play_simulation(GameState & currstate,
     if (result.valid()) {
         node->update(result.eval());
         node->update_betamcts();
+        node->set_children_relevance_betamcts(color);
     }
     node->virtual_loss_undo();
 

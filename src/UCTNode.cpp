@@ -40,6 +40,7 @@
 #include <numeric>
 #include <utility>
 #include <vector>
+#include <boost/math/special_functions/beta.hpp>
 
 #include "UCTNode.h"
 #include "FastBoard.h"
@@ -238,6 +239,48 @@ void UCTNode::update_betamcts() {
         if (visits_children > 0.0) {
             m_blackevals_betamcts = blackwins_children / visits_children;
         }
+    }
+}
+
+void UCTNode::set_children_relevance_betamcts(int tomove) {
+    double max_relevance = 0.0;
+    double alpha = 0.0;
+    double beta = 0.0;
+    if (tomove == FastBoard::WHITE) {
+        alpha = 1.0 + m_blackevals_betamcts * m_visits_betamcts;
+        beta = 1.0 + (1.0 - m_blackevals_betamcts) * m_visits_betamcts;
+    } else {
+        alpha = 1.0 + (1.0 - m_blackevals_betamcts) * m_visits_betamcts;
+        beta = 1.0 + m_blackevals_betamcts * m_visits_betamcts;
+    }
+    double parent_eval_cutoff = boost::math::ibeta_inv(alpha, beta, 0.5);
+
+    for (auto& child : m_children) {
+        if (!child.valid()) {
+            continue;
+        }
+
+        if (child.get_visits() > 0) {
+            auto child_blackeval = child.get_blackevals_betamcts();
+            auto child_visits = child.get_visits_betamcts();
+            if (tomove == FastBoard::WHITE) {
+                alpha = 1.0 + (1.0 - child_blackeval) * child_visits;
+                beta = 1.0 + child_blackeval * child_visits;
+            } else {
+                alpha = 1.0 + child_blackeval * child_visits;
+                beta = 1.0 + (1.0 - child_blackeval) * child_visits;
+            }
+            auto child_relevance = boost::math::ibeta(alpha, beta, parent_eval_cutoff);
+
+            child.set_relevance_betamcts(child_relevance);
+            if (max_relevance < child_relevance) {
+                max_relevance = child_relevance;
+            }
+
+        } else {
+
+        }
+
     }
 }
 
