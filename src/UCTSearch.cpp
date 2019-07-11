@@ -265,6 +265,7 @@ SearchResult UCTSearch::play_simulation(GameState & currstate,
 
     if (result.valid()) {
         node->update(result.eval());
+        node->update_betamcts();
     }
     node->virtual_loss_undo();
 
@@ -937,4 +938,3 @@ void UCTSearch::set_visit_limit(int visits) {
     // Limit to type max / 2 to prevent overflow when multithreading.
     m_maxvisits = std::min(visits, UNLIMITED_PLAYOUTS);
 }
-

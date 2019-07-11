@@ -213,7 +213,9 @@ void UCTNode::update(float eval) {
     // Welford's online algorithm for calculating variance.
     auto delta = old_delta * new_delta;
     atomic_add(m_squared_eval_diff, delta);
+}
 
+void UCTNode::update_betamcts() {
     double visits_children = 0.0;
     double blackwins_children = 0.0;
 
