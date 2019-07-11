@@ -83,6 +83,7 @@ public:
     void virtual_loss();
     void virtual_loss_undo();
     void update(float eval);
+    void update_betamcts();
     float get_eval_lcb(int color) const;
     // relevance is managed by parent
     double get_relevance_betamcts() const;
