@@ -250,7 +250,7 @@ void UCTNode::update_betamcts(float eval) {
 void UCTNode::set_children_relevance_betamcts(int tomove) {
     // trust_factor into single NN evals
     double trust_factor = 1.0;
-    double percentile = 0.0;
+    double percentile = 0.2;
 
     double max_relevance = 0.0;
     double alpha = 1.0 + m_blackevals_betamcts * m_visits_betamcts * trust_factor;
@@ -338,7 +338,7 @@ double UCTNode::get_visits_betamcts() const {
     return m_visits_betamcts;
 }
 
-double UCTNode::get_eval_betamcts(int tomove, int virtual_loss) const {
+double UCTNode::get_raw_eval_betamcts(int tomove, int virtual_loss) const {
     auto visits = get_visits() + virtual_loss;
     assert(visits > 0);
     auto blackeval = get_blackevals_betamcts();
@@ -350,6 +350,13 @@ double UCTNode::get_eval_betamcts(int tomove, int virtual_loss) const {
         eval = 1.0f - eval;
     }
     return eval;
+}
+
+double UCTNode::get_eval_betamcts(int tomove) const {
+    // Due to the use of atomic updates and virtual losses, it is
+    // possible for the visit count to change underneath us. Make sure
+    // to return a consistent result to the caller by caching the values.
+    return get_raw_eval(tomove, m_virtual_loss);
 }
 
 float UCTNode::get_eval_lcb(int color) const {
@@ -439,11 +446,8 @@ UCTNode* UCTNode::uct_select_child(int color, bool is_root) {
             winrate = -1.0f - fpu_reduction;
         } else if (child.get_visits() > 0) {
             // use get_eval_betamcts instead
-            if (child.get_eval(color) != child.get_eval_betamcts(color)) {
-                myprintf("%5.2f %5.2f \n", child.get_eval(color), child.get_eval_betamcts(color));
-            }
-            winrate = child.get_eval(color);
-            // winrate = child.get_eval_betamcts(color);
+            // winrate = child.get_eval(color);
+            winrate = child.get_eval_betamcts(color);
         }
         const auto psa = child.get_policy();
         const auto denom = 1.0 + child.get_visits();
