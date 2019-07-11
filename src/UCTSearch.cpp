@@ -265,7 +265,7 @@ SearchResult UCTSearch::play_simulation(GameState & currstate,
 
     if (result.valid()) {
         node->update(result.eval());
-        node->update_betamcts();
+        node->update_betamcts(result.eval());
         node->set_children_relevance_betamcts(color);
     }
     node->virtual_loss_undo();
@@ -303,12 +303,14 @@ void UCTSearch::dump_stats(FastState & state, UCTNode & parent) {
         tmpstate.play_move(node->get_move());
         auto pv = move + " " + get_pv(tmpstate, *node);
 
-        myprintf("%4s -> %7d (V: %5.2f%%) (LCB: %5.2f%%) (beta-mcts: %5.2f%%) (N: %5.2f%%) PV: %s\n",
+        myprintf("%4s -> %7d (V: %5.2f%%) (LCB: %5.2f%%) (beta-mcts: %5.2f%%, %5.2f, %5.2f%%) (N: %5.2f%%) PV: %s\n",
             move.c_str(),
             node->get_visits(),
             node->get_visits() ? node->get_raw_eval(color)*100.0f : 0.0f,
             std::max(0.0f, node->get_eval_lcb(color) * 100.0f),
             node->get_blackevals_betamcts()*100.0f,
+            node->get_visits_betamcts(),
+            node->get_relevance_betamcts()*100.0f,
             node->get_policy() * 100.0f,
             pv.c_str());
     }

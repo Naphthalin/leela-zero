@@ -83,7 +83,7 @@ public:
     void virtual_loss();
     void virtual_loss_undo();
     void update(float eval);
-    void update_betamcts();
+    void update_betamcts(float eval);
     void set_children_relevance_betamcts(int tomove);
     float get_eval_lcb(int color) const;
     // relevance is managed by parent
@@ -130,7 +130,7 @@ private:
     std::atomic<std::int16_t> m_virtual_loss{0};
     std::atomic<int> m_visits{0};
     // effective visits for betamcts
-    std::atomic<double> m_visits_betamcts{0.0};
+    std::atomic<double> m_visits_betamcts{0.0f};
     // UCT eval
     float m_policy;
     // Original net eval for this node (not children).
@@ -139,12 +139,12 @@ private:
     // Initialized to small non-zero value to avoid accidental zero variances
     // at low visits.
     std::atomic<float> m_squared_eval_diff{1e-4f};
-    std::atomic<double> m_blackevals{0.0};
+    std::atomic<double> m_blackevals{0.0f};
     // effective blackeval for betamcts
-    std::atomic<double> m_blackevals_betamcts{0.0};
+    std::atomic<double> m_blackevals_betamcts{0.0f};
     std::atomic<Status> m_status{ACTIVE};
     // relevance for parent's eval
-    std::atomic<double> m_relevance_betamcts{1.0};
+    std::atomic<double> m_relevance_betamcts{1.0f};
 
     // m_expand_state acts as the lock for m_children.
     // see manipulation methods below for possible state transition

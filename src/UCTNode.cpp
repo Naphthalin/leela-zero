@@ -216,29 +216,34 @@ void UCTNode::update(float eval) {
     atomic_add(m_squared_eval_diff, delta);
 }
 
-void UCTNode::update_betamcts() {
+void UCTNode::update_betamcts(float eval) {
     double visits_children = 0.0;
     double blackwins_children = 0.0;
+
+    visits_children = 1.0;
+    blackwins_children = m_net_eval;
 
     for (auto& child : m_children) {
         if (!child.valid()) {
             continue;
         }
 
-        if (child.get_visits() > 0) {
+        if (child.get_visits() > 0.0) {
             auto child_blackeval = child.get_blackevals_betamcts();
             auto child_visits = child.get_visits_betamcts();
             auto child_relevance = child.get_relevance_betamcts();
+            child_relevance = 1.0;
             visits_children += child_relevance * child_visits;
             blackwins_children += child_relevance * child_visits * child_blackeval;
 
-        } else {
-
         }
-
-        if (visits_children > 0.0) {
-            m_blackevals_betamcts = blackwins_children / visits_children;
-        }
+    }
+    if (visits_children > 0.0) {
+        m_blackevals_betamcts = blackwins_children / visits_children;
+        m_visits_betamcts = visits_children;
+    } else {
+        m_blackevals_betamcts = eval;
+        m_visits_betamcts = 1.0;
     }
 }
 
@@ -263,7 +268,7 @@ void UCTNode::set_children_relevance_betamcts(int tomove) {
         }
 
         if (child.get_visits() > 0) {
-            double child_relevance = 0.0;
+            double child_relevance = 1.0;
             auto child_blackeval = child.get_blackevals_betamcts();
             auto child_visits = child.get_visits_betamcts();
             alpha = 1.0 + child_blackeval * child_visits * trust_factor;
@@ -434,8 +439,11 @@ UCTNode* UCTNode::uct_select_child(int color, bool is_root) {
             winrate = -1.0f - fpu_reduction;
         } else if (child.get_visits() > 0) {
             // use get_eval_betamcts instead
-            // winrate = child.get_eval(color);
-            winrate = child.get_eval_betamcts(color);
+            if (child.get_eval(color) != child.get_eval_betamcts(color)) {
+                myprintf("%5.2f %5.2f \n", child.get_eval(color), child.get_eval_betamcts(color));
+            }
+            winrate = child.get_eval(color);
+            // winrate = child.get_eval_betamcts(color);
         }
         const auto psa = child.get_policy();
         const auto denom = 1.0 + child.get_visits();
