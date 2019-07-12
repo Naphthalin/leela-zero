@@ -531,7 +531,7 @@ UCTNode& UCTNode::get_best_root_child(int color) {
     double max_visits = 0.0f;
     for (const auto& node : m_children) {
         if (node.get_visits() > 0) {
-            max_visits = std::max(max_visits, node.get_visits_betamcts());
+            max_visits = std::max(max_visits, node.get_visits_betamcts() * node.get_relevance_betamcts());
         }
     }
 
