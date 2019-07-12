@@ -249,8 +249,8 @@ void UCTNode::update_betamcts(float eval) {
 
 void UCTNode::set_children_relevance_betamcts(int tomove) {
     // trust_factor into single NN evals
-    double trust_factor = 1.0;
-    double percentile = 0.2;
+    double trust_factor = 10.0;
+    double percentile = 0.5;
 
     double max_relevance = 0.0;
     double alpha = 1.0 + m_blackevals_betamcts * m_visits_betamcts * trust_factor;
@@ -343,9 +343,9 @@ double UCTNode::get_raw_eval_betamcts(int tomove, int virtual_loss) const {
     assert(visits > 0);
     auto blackeval = get_blackevals_betamcts();
     if (tomove == FastBoard::WHITE) {
-        blackeval += static_cast<double>(virtual_loss);
+        blackeval += static_cast<double>(virtual_loss) / double(visits);
     }
-    auto eval = static_cast<float>(blackeval / double(visits));
+    auto eval = static_cast<float>(blackeval);
     if (tomove == FastBoard::WHITE) {
         eval = 1.0f - eval;
     }
@@ -356,22 +356,28 @@ double UCTNode::get_eval_betamcts(int tomove) const {
     // Due to the use of atomic updates and virtual losses, it is
     // possible for the visit count to change underneath us. Make sure
     // to return a consistent result to the caller by caching the values.
-    return get_raw_eval(tomove, m_virtual_loss);
+    return get_raw_eval_betamcts(tomove, m_virtual_loss);
 }
 
 float UCTNode::get_eval_lcb(int color) const {
+    // make get_eval_lcb use beta-mcts values
     // Lower confidence bound of winrate.
-    auto visits = get_visits();
-    if (visits < 2) {
+    if (get_visits() < 2) {
         // Return large negative value if not enough visits.
-        return -1e6f + visits;
+        return -1e6f + get_visits();
     }
-    auto mean = get_raw_eval(color);
+    auto visits = get_visits_betamcts();
+    auto mean = get_raw_eval_betamcts(color);
 
-    auto stddev = std::sqrt(get_eval_variance(1.0f) / visits);
-    auto z = cached_t_quantile(visits - 1);
+    // auto stddev = std::sqrt(get_eval_variance(1.0f) / visits);
+    // auto z = cached_t_quantile(visits - 1);
 
-    return mean - z * stddev;
+    // use percentile of beta distribution
+    auto alpha = visits * mean;
+    auto beta = visits * (1.0 - mean);
+
+    return boost::math::ibeta_inv(alpha, beta, 0.35);
+    // return mean;
 }
 
 float UCTNode::get_raw_eval(int tomove, int virtual_loss) const {
