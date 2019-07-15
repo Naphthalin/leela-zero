@@ -249,8 +249,8 @@ void UCTNode::update_betamcts(float eval) {
 
 void UCTNode::set_children_relevance_betamcts(int tomove) {
     // trust_factor into single NN evals
-    double trust_factor = 10.0; // cfg_betamcts_trust;
-    double percentile = 0.3; // cfg_betamcts_percentile;
+    double trust_factor = cfg_betamcts_trust;
+    double percentile = cfg_betamcts_percentile;
 
     double max_relevance = 0.0;
     double alpha = 1.0 + m_blackevals_betamcts * m_visits_betamcts * trust_factor;
@@ -376,7 +376,7 @@ float UCTNode::get_eval_lcb(int color) const {
     auto alpha = visits * mean;
     auto beta = visits * (1.0 - mean);
 
-    return boost::math::ibeta_inv(alpha, beta, 0.35); // cfg_betamcts_lcb);
+    return boost::math::ibeta_inv(alpha, beta, cfg_betamcts_lcb);
     // return mean;
 }
 

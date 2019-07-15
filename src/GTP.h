@@ -122,6 +122,9 @@ extern FILE* cfg_logfile_handle;
 extern bool cfg_quiet;
 extern std::string cfg_options_str;
 extern bool cfg_benchmark;
+extern double cfg_betamcts_trust;
+extern double cfg_betamcts_percentile;
+extern double cfg_betamcts_lcb;
 extern bool cfg_cpu_only;
 extern AnalyzeTags cfg_analyze_tags;
 
