@@ -161,6 +161,13 @@ static void parse_commandline(int argc, char *argv[]) {
         ("noponder", "Disable thinking on opponent's time.")
         ("benchmark", "Test network and exit. Default args:\n-v3200 --noponder "
                       "-m0 -t1 -s1.")
+        ("betamcts-trust", po::value<double>()->default_value(10.0f),
+                      "Trust factor in NN eval for betamcts")
+        ("betamcts-percentile", po::value<double>()->default_value(0.3f),
+                      "Beta distribution percentile for betamcts")
+        ("betamcts-lcb", po::value<double>()->default_value(0.35f),
+                      "LCB percentile for best move in betamcts")
+
 #ifndef USE_CPU_ONLY
         ("cpu-only", "Use CPU-only implementation and do not use OpenCL device(s).")
 #endif
@@ -194,6 +201,7 @@ static void parse_commandline(int argc, char *argv[]) {
         ("randomtemp",
             po::value<float>()->default_value(cfg_random_temp),
             "Temperature to use for random move selection.")
+
         ;
 #ifdef USE_TUNER
     po::options_description tuner_desc("Tuning options");
@@ -469,15 +477,15 @@ static void parse_commandline(int argc, char *argv[]) {
     }
 
     if (vm.count("betamcts-trust")) {
-        cfg_betamcts_trust = vm["betamcts-trust"].as<double>();
+        double cfg_betamcts_trust = vm["betamcts-trust"].as<double>();
         // has to be positive
-        if (cfg_betamcts_percentile < 0.0) {
-            cfg_betamcts_percentile = 0.0;
+        if (cfg_betamcts_trust < 0.0) {
+            cfg_betamcts_trust = 0.0;
         }
     }
 
     if (vm.count("betamcts-percentile")) {
-        cfg_betamcts_percentile = vm["betamcts-percentile"].as<double>();
+        double cfg_betamcts_percentile = vm["betamcts-percentile"].as<double>();
         // has to be within [0.0, 0.5]
         if (cfg_betamcts_percentile < 0.0) {
             cfg_betamcts_percentile = 0.0;
@@ -487,7 +495,7 @@ static void parse_commandline(int argc, char *argv[]) {
     }
 
     if (vm.count("betamcts-lcb")) {
-        cfg_betamcts_lcb = vm["betamcts-lcb"].as<double>();
+        double cfg_betamcts_lcb = vm["betamcts-lcb"].as<double>();
         // has to be within [0.0, 0.5]
         if (cfg_betamcts_lcb < 0.0) {
             cfg_betamcts_lcb = 0.0;
