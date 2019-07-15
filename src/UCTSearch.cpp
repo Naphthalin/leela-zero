@@ -308,7 +308,7 @@ void UCTSearch::dump_stats(FastState & state, UCTNode & parent) {
             node->get_visits(),
             node->get_visits() ? node->get_raw_eval(color)*100.0f : 0.0f,
             std::max(0.0f, node->get_eval_lcb(color) * 100.0f),
-            node->get_raw_eval_betamcts(color)*100.0f,
+            node->get_visits() ? node->get_raw_eval_betamcts(color)*100.0f : 0.0f,
             node->get_visits_betamcts(),
             node->get_relevance_betamcts()*100.0f,
             node->get_policy() * 100.0f,

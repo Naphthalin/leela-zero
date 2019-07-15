@@ -489,6 +489,21 @@ public:
         if (m_lcb_min_visits < 2) {
             m_lcb_min_visits = 2;
         }
+        /* Order children by effective visits for PV.
+        if (a_visit > 0) {
+            auto a_visits_eff_betamcts = a.get_visits_betamcts() * a.get_relevance_betamcts();
+        } else {
+            auto a_visits_eff_betamcts = 0;
+        }
+
+        if (b_visit > 0) {
+            auto b_visits_eff_betamcts = b.get_visits_betamcts() * b.get_relevance_betamcts();
+        } else {
+            auto b_visits_eff_betamcts = 0;
+        }
+
+        return a_visits_eff_betamcts < b_visits_eff_betamcts;*/
+
 
         // Calculate the lower confidence bound for each node.
         if ((a_visit > m_lcb_min_visits) && (b_visit > m_lcb_min_visits)) {
@@ -533,7 +548,7 @@ UCTNode& UCTNode::get_best_root_child(int color) {
         if (node.get_visits() > 0) {
             max_visits = std::max(max_visits, node.get_visits_betamcts() * node.get_relevance_betamcts());
         }
-    }
+    } // TODO actually select child
 
     auto ret = std::max_element(begin(m_children), end(m_children),
                                 NodeComp(color, cfg_lcb_min_visit_ratio * max_visits));
