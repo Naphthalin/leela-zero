@@ -468,6 +468,34 @@ static void parse_commandline(int argc, char *argv[]) {
         }
     }
 
+    if (vm.count("betamcts-trust")) {
+        cfg_betamcts_trust = vm["betamcts-trust"].as<double>();
+        // has to be positive
+        if (cfg_betamcts_percentile < 0.0) {
+            cfg_betamcts_percentile = 0.0;
+        }
+    }
+
+    if (vm.count("betamcts-percentile")) {
+        cfg_betamcts_percentile = vm["betamcts-percentile"].as<double>();
+        // has to be within [0.0, 0.5]
+        if (cfg_betamcts_percentile < 0.0) {
+            cfg_betamcts_percentile = 0.0;
+        } else if (cfg_betamcts_percentile > 0.5) {
+            cfg_betamcts_percentile = 0.5;
+        }
+    }
+
+    if (vm.count("betamcts-lcb")) {
+        cfg_betamcts_lcb = vm["betamcts-lcb"].as<double>();
+        // has to be within [0.0, 0.5]
+        if (cfg_betamcts_lcb < 0.0) {
+            cfg_betamcts_lcb = 0.0;
+        } else if (cfg_betamcts_lcb > 0.5) {
+            cfg_betamcts_lcb = 0.5;
+        }
+    }
+
     // Do not lower the expected eval for root moves that are likely not
     // the best if we have introduced noise there exactly to explore more.
     cfg_fpu_root_reduction = cfg_noise ? 0.0f : cfg_fpu_reduction;
