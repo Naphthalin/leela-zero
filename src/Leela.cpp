@@ -489,8 +489,8 @@ static void parse_commandline(int argc, char *argv[]) {
         // has to be within [0.0, 0.5]
         if (cfg_betamcts_percentile < 0.0) {
             cfg_betamcts_percentile = 0.0;
-        } else if (cfg_betamcts_percentile > 0.5) {
-            cfg_betamcts_percentile = 0.5;
+        } else if (cfg_betamcts_percentile > 1.0) {
+            cfg_betamcts_percentile = 1.0;
         }
     }
 

@@ -627,7 +627,7 @@ std::string UCTSearch::get_analysis(int playouts) {
     int color = tempstate.board.get_to_move();
 
     auto pvstring = get_pv(tempstate, *m_root);
-    float winrate = 100.0f * m_root->get_raw_eval(color);
+    float winrate = 100.0f * m_root->get_raw_eval_betamcts(color);
     return str(boost::format("Playouts: %d, Win: %5.2f%%, PV: %s")
         % playouts % winrate % pvstring.c_str());
 }

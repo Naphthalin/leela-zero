@@ -279,7 +279,7 @@ void UCTNode::set_children_relevance_betamcts(int tomove) {
                 child_relevance = boost::math::ibeta(alpha, beta, parent_eval_cutoff) / (1.0 - percentile);
             }
 
-            child.set_relevance_betamcts(child_relevance);
+            child.set_relevance_betamcts(std::max(0.1,std::min(1.2,child_relevance)));
             if (max_relevance < child_relevance) {
                 max_relevance = child_relevance;
             }
