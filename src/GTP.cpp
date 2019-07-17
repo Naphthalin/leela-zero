@@ -361,8 +361,8 @@ void GTP::setup_default_parameters() {
     cfg_logfile_handle = nullptr;
     cfg_quiet = false;
     cfg_benchmark = false;
-    cfg_betamcts_trust = 10.0f;
-    cfg_betamcts_percentile = 0.5f;
+    cfg_betamcts_trust = 1.0f;
+    cfg_betamcts_percentile = 0.1f;
     cfg_betamcts_lcb = 0.35f;
 #ifdef USE_CPU_ONLY
     cfg_cpu_only = true;
