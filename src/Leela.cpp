@@ -161,11 +161,11 @@ static void parse_commandline(int argc, char *argv[]) {
         ("noponder", "Disable thinking on opponent's time.")
         ("benchmark", "Test network and exit. Default args:\n-v3200 --noponder "
                       "-m0 -t1 -s1.")
-        ("betamcts-trust", po::value<double>()->default_value(10.0f),
+        ("betamcts-trust", po::value<double>()->default_value(10.0),
                       "Trust factor in NN eval for betamcts")
-        ("betamcts-percentile", po::value<double>()->default_value(0.3f),
+        ("betamcts-percentile", po::value<double>()->default_value(0.3),
                       "Beta distribution percentile for betamcts")
-        ("betamcts-lcb", po::value<double>()->default_value(0.35f),
+        ("betamcts-lcb", po::value<double>()->default_value(0.35),
                       "LCB percentile for best move in betamcts")
 
 #ifndef USE_CPU_ONLY

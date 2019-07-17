@@ -279,7 +279,7 @@ void UCTNode::set_children_relevance_betamcts(int tomove) {
                 child_relevance = boost::math::ibeta(alpha, beta, parent_eval_cutoff) / (1.0 - percentile);
             }
 
-            child.set_relevance_betamcts(std::max(0.1,std::min(1.2,child_relevance)));
+            child.set_relevance_betamcts(std::max(0.1,std::min(1.1,child_relevance)));
             if (max_relevance < child_relevance) {
                 max_relevance = child_relevance;
             }
@@ -341,11 +341,12 @@ double UCTNode::get_visits_betamcts() const {
 double UCTNode::get_raw_eval_betamcts(int tomove, int virtual_loss) const {
     auto visits = get_visits() + virtual_loss;
     assert(visits > 0);
-    auto blackeval = get_blackevals_betamcts();
+    auto blackeval = get_blackevals_betamcts() * get_visits();
+    // blackevals originally counts cumulated blackevals
     if (tomove == FastBoard::WHITE) {
-        blackeval += static_cast<double>(virtual_loss) / double(visits);
+        blackeval += static_cast<double>(virtual_loss);
     }
-    auto eval = static_cast<float>(blackeval);
+    auto eval = static_cast<float>(blackeval / double(visits));
     if (tomove == FastBoard::WHITE) {
         eval = 1.0f - eval;
     }
