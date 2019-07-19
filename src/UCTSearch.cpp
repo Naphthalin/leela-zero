@@ -344,7 +344,7 @@ void UCTSearch::output_analysis(FastState & state, UCTNode & parent) {
         tmpstate.play_move(node->get_move());
         auto rest_of_pv = get_pv(tmpstate, *node);
         auto pv = move + (rest_of_pv.empty() ? "" : " " + rest_of_pv);
-        auto move_eval = node->get_visits() ? node->get_raw_eval(color) : 0.0f;
+        auto move_eval = node->get_visits() ? node->get_raw_eval_betamcts(color) : 0.0f;
         auto policy = node->get_policy();
         auto lcb = node->get_eval_lcb(color);
         auto visits = node->get_visits();
