@@ -293,6 +293,8 @@ void UCTSearch::dump_stats(FastState & state, UCTNode & parent) {
     }
 
     int movecount = 0;
+    int children_low_visits = 0;
+    const int low_visits_cutoff = 1;
     for (const auto& node : parent.get_children()) {
         // Always display at least two moves. In the case there is
         // only one move searched the user could get an idea why.
@@ -302,18 +304,22 @@ void UCTSearch::dump_stats(FastState & state, UCTNode & parent) {
         auto tmpstate = FastState{state};
         tmpstate.play_move(node->get_move());
         auto pv = move + " " + get_pv(tmpstate, *node);
-
-        myprintf("%4s -> %7d (V: %5.2f%%) (LCB: %5.2f%%) (beta-mcts: %5.2f%%, %5.2f, %5.2f%%) (N: %5.2f%%) PV: %s\n",
-            move.c_str(),
-            node->get_visits(),
-            node->get_visits() ? node->get_raw_eval(color)*100.0f : 0.0f,
-            std::max(0.0f, node->get_eval_lcb(color) * 100.0f),
-            node->get_visits() ? node->get_raw_eval_betamcts(color)*100.0f : 0.0f,
-            node->get_visits_betamcts(),
-            node->get_relevance_betamcts()*100.0f,
-            node->get_policy() * 100.0f,
-            pv.c_str());
+        if (node->get_visits() > low_visits_cutoff) {
+            myprintf("%4s -> %7d (V: %5.2f%%) (LCB: %5.2f%%) (beta-mcts: %5.2f%%, %5.2f, %5.2f%%) (N: %5.2f%%) PV: %s\n",
+                move.c_str(),
+                node->get_visits(),
+                node->get_visits() ? node->get_raw_eval(color)*100.0f : 0.0f,
+                std::max(0.0f, node->get_eval_lcb(color) * 100.0f),
+                node->get_visits() ? node->get_raw_eval_betamcts(color)*100.0f : 0.0f,
+                node->get_visits_betamcts(),
+                node->get_relevance_betamcts()*100.0f,
+                node->get_policy() * 100.0f,
+                pv.c_str());
+        } else {
+            children_low_visits++;
+        }
     }
+    myprintf("%d omitted nodes with %d visit(s) or less\n", children_low_visits, low_visits_cutoff);
     tree_stats(parent);
 }
 
