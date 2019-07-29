@@ -344,6 +344,7 @@ void GTP::setup_default_parameters() {
 #endif
 #endif
     cfg_puct = 0.5f;
+    // cfg_puct = 2.0f; // doubled puct for beta-MCTS
     cfg_logpuct = 0.015f;
     cfg_logconst = 1.7f;
     cfg_softmax_temp = 1.0f;
@@ -361,9 +362,9 @@ void GTP::setup_default_parameters() {
     cfg_logfile_handle = nullptr;
     cfg_quiet = false;
     cfg_benchmark = false;
-    cfg_betamcts_trust = 1.0f;
-    cfg_betamcts_percentile = 0.1f;
-    cfg_betamcts_lcb = 0.35f;
+    cfg_betamcts_trust = 0.1f;
+    cfg_betamcts_percentile = 0.05f;
+    cfg_betamcts_lcb = 0.2f;
 #ifdef USE_CPU_ONLY
     cfg_cpu_only = true;
 #else

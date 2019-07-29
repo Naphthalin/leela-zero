@@ -279,7 +279,7 @@ void UCTNode::set_children_relevance_betamcts(int tomove) {
                 child_relevance = boost::math::ibeta(alpha, beta, parent_eval_cutoff) / (1.0 - percentile);
             }
 
-            child.set_relevance_betamcts(std::max(0.1,std::min(1.1,child_relevance)));
+            child.set_relevance_betamcts(std::max(0.03,std::min(1.1,child_relevance)));
             if (max_relevance < child_relevance) {
                 max_relevance = child_relevance;
             }
@@ -425,9 +425,11 @@ UCTNode* UCTNode::uct_select_child(int color, bool is_root) {
     auto parentvisits = size_t{0};
     for (const auto& child : m_children) {
         if (child.valid()) {
-            parentvisits += child.get_visits();
+            // use effective visits
+            // parentvisits += child.get_visits();
             if (child.get_visits() > 0) {
                 total_visited_policy += child.get_policy();
+                parentvisits += child.get_visits_betamcts();
             }
         }
     }
@@ -457,7 +459,11 @@ UCTNode* UCTNode::uct_select_child(int color, bool is_root) {
             winrate = child.get_eval_betamcts(color);
         }
         const auto psa = child.get_policy();
-        const auto denom = 1.0 + child.get_visits();
+        // const auto denom = 1.0 + child.get_visits();
+        auto denom = 1.0 + child.get_visits();
+        if (child.get_visits() > 0) {
+            denom = 1.0 + child.get_visits_betamcts();
+        }
         const auto puct = cfg_puct * psa * (numerator / denom);
         const auto value = winrate + puct;
         assert(value > std::numeric_limits<double>::lowest());
