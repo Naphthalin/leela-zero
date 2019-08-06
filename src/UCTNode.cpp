@@ -279,7 +279,7 @@ void UCTNode::set_children_relevance_betamcts(int tomove) {
                 child_relevance = boost::math::ibeta(alpha, beta, parent_eval_cutoff) / (1.0 - percentile);
             }
 
-            child.set_relevance_betamcts(std::max(0.03,std::min(1.1,child_relevance)));
+            child.set_relevance_betamcts(std::max(0.1,std::min(1.1,child_relevance)));
             if (max_relevance < child_relevance) {
                 max_relevance = child_relevance;
             }
@@ -436,10 +436,10 @@ UCTNode* UCTNode::uct_select_child(int color, bool is_root) {
     // use effective parent visits
     parentvisits = get_visits_betamcts();
 
-    const auto numerator = std::sqrt(double(parentvisits) *
-            std::log(cfg_logpuct * double(parentvisits) + cfg_logconst));
+    // const auto numerator = std::sqrt(double(parentvisits) *
+    //        std::log(cfg_logpuct * double(parentvisits) + cfg_logconst));
     // if trying EatNow's UCT modification
-    // const auto numerator = parentvisits;
+    const auto numerator = parentvisits * std::log(cfg_logpuct * double(parentvisits) + cfg_logconst);
 
     const auto fpu_reduction = (is_root ? cfg_fpu_root_reduction : cfg_fpu_reduction) * std::sqrt(total_visited_policy);
     // Estimated eval for unknown nodes = original parent NN eval - reduction
@@ -469,9 +469,9 @@ UCTNode* UCTNode::uct_select_child(int color, bool is_root) {
         if (child.get_visits() > 0) {
             denom = 1.0 + child.get_visits_betamcts();
         }
-        const auto puct = cfg_puct * psa * (numerator / denom);
+        // const auto puct = cfg_puct * psa * (numerator / denom);
         // if trying EatNow's UCT modification
-        // const auto puct = cfg_puct * psa * (numerator / denom) / sqrt(denom);
+        const auto puct = cfg_puct * psa * (numerator / denom) / sqrt(denom);
         const auto value = winrate + puct;
         assert(value > std::numeric_limits<double>::lowest());
 

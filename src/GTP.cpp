@@ -344,7 +344,7 @@ void GTP::setup_default_parameters() {
 #endif
 #endif
     // cfg_puct = 0.5f;
-    cfg_puct = 0.5f; // try EatNow's UCT modification
+    cfg_puct = 0.1f; // try EatNow's UCT modification
     cfg_logpuct = 0.015f;
     cfg_logconst = 1.7f;
     cfg_softmax_temp = 1.0f;
