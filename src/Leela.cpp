@@ -167,8 +167,7 @@ static void parse_commandline(int argc, char *argv[]) {
                       "Beta distribution percentile for betamcts")
         ("betamcts-lcb", po::value<double>()->default_value(0.2),
                       "LCB percentile for best move in betamcts")
-        ("use-new-ucb", po::value<bool>()->default_value(false),
-                      "Flag for using new UCB formula")
+        ("use-new-ucb", "Flag for using new UCB formula")
 
 #ifndef USE_CPU_ONLY
         ("cpu-only", "Use CPU-only implementation and do not use OpenCL device(s).")
