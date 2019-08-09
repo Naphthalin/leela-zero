@@ -294,7 +294,7 @@ void UCTSearch::dump_stats(FastState & state, UCTNode & parent) {
 
     int movecount = 0;
     int children_low_visits = 0;
-    const int low_visits_cutoff = 1;
+    const int low_visits_cutoff = 10;
     for (const auto& node : parent.get_children()) {
         // Always display at least two moves. In the case there is
         // only one move searched the user could get an idea why.
