@@ -436,10 +436,14 @@ UCTNode* UCTNode::uct_select_child(int color, bool is_root) {
     // use effective parent visits
     parentvisits = get_visits_betamcts();
 
-    // const auto numerator = std::sqrt(double(parentvisits) *
-    //        std::log(cfg_logpuct * double(parentvisits) + cfg_logconst));
+    double numerator = 1.0;
     // if trying EatNow's UCT modification
-    const auto numerator = parentvisits * std::log(cfg_logpuct * double(parentvisits) + cfg_logconst);
+    if (cfg_use_new_ucb) {
+        numerator = parentvisits * std::log(cfg_logpuct * double(parentvisits) + cfg_logconst);
+    } else {
+        numerator = std::sqrt(double(parentvisits) *
+              std::log(cfg_logpuct * double(parentvisits) + cfg_logconst));
+    }
 
     const auto fpu_reduction = (is_root ? cfg_fpu_root_reduction : cfg_fpu_reduction) * std::sqrt(total_visited_policy);
     // Estimated eval for unknown nodes = original parent NN eval - reduction
@@ -469,9 +473,13 @@ UCTNode* UCTNode::uct_select_child(int color, bool is_root) {
         if (child.get_visits() > 0) {
             denom = 1.0 + child.get_visits_betamcts();
         }
-        // const auto puct = cfg_puct * psa * (numerator / denom);
+        double puct = 1.0;
         // if trying EatNow's UCT modification
-        const auto puct = cfg_puct * psa * (numerator / denom) / sqrt(denom);
+        if (cfg_use_new_ucb) {
+            puct = cfg_puct_new_ucb * psa * (numerator / denom) / sqrt(denom);
+        } else {
+            puct = cfg_puct * psa * (numerator / denom);
+        }
         const auto value = winrate + puct;
         assert(value > std::numeric_limits<double>::lowest());
 
