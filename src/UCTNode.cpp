@@ -423,15 +423,23 @@ UCTNode* UCTNode::uct_select_child(int color, bool is_root) {
     // Count parentvisits manually to avoid issues with transpositions.
     auto total_visited_policy = 0.0f;
     auto parentvisits = size_t{0};
+    // Get highest child eval for fpu_reduction
+    auto eval = 0.0f;
+    auto best_eval = std::numeric_limits<double>::lowest();
     for (const auto& child : m_children) {
         if (child.valid()) {
-            // use effective visits
-            // parentvisits += child.get_visits();
+            parentvisits += child.get_visits();
             if (child.get_visits() > 0) {
                 total_visited_policy += child.get_policy();
-                parentvisits += child.get_visits_betamcts();
+                eval = child.get_eval_betamcts(color);
+                if (eval > best_eval) {
+                    best_eval = eval;
+                }
             }
         }
+    }
+    if (parentvisits == 0) {
+        best_eval = get_net_eval(color);
     }
     // use effective parent visits
     parentvisits = get_visits_betamcts();
@@ -447,7 +455,14 @@ UCTNode* UCTNode::uct_select_child(int color, bool is_root) {
 
     const auto fpu_reduction = (is_root ? cfg_fpu_root_reduction : cfg_fpu_reduction) * std::sqrt(total_visited_policy);
     // Estimated eval for unknown nodes = original parent NN eval - reduction
-    const auto fpu_eval = get_net_eval(color) - fpu_reduction;
+    const auto best_eval_transformed = 2.0 * best_eval - 1.0;
+    // use eval of best child instead of net_eval
+    const auto fpu_eval = (cfg_use_logitQ && (best_eval_transformed > -1.0 && best_eval_transformed < 1.0) ?
+      // get_net_eval(color) - fpu_reduction
+      // treating fpu_reduction properly needs higher fpu_reduction value for extreme Q
+      0.5 + 0.5 * (best_eval_transformed - tanh(fpu_reduction)) / (1.0 - best_eval_transformed * tanh(fpu_reduction))
+      // this is a simplification of tanh(atanh(Q)-fpu), scaled from Q in [-1,1] to winrate in [0,1]
+      : best_eval - fpu_reduction);
 
     auto best = static_cast<UCTNodePointer*>(nullptr);
     auto best_value = std::numeric_limits<double>::lowest();
@@ -473,14 +488,13 @@ UCTNode* UCTNode::uct_select_child(int color, bool is_root) {
         if (child.get_visits() > 0) {
             denom = 1.0 + child.get_visits_betamcts();
         }
-        double puct = 1.0;
         // if trying EatNow's UCT modification
-        if (cfg_use_new_ucb) {
-            puct = cfg_puct_new_ucb * psa * (numerator / denom) / sqrt(denom);
-        } else {
-            puct = cfg_puct * psa * (numerator / denom);
-        }
-        const auto value = winrate + puct;
+        const auto puct = cfg_use_new_ucb ? cfg_puct_new_ucb * psa * (numerator / denom) / sqrt(denom)
+          : cfg_puct * psa * (numerator / denom);
+        const auto value = (cfg_use_logitQ && (winrate > 0.0 && winrate < 1.0) ?
+          0.5 + 0.5 * ((2.0 * winrate - 1.0) + tanh(puct)) / (1.0 + (2.0 * winrate - 1.0) * tanh(puct))
+          // this is a simplification of tanh(atanh(Q)+puct), scaled from Q in [-1,1] to winrate in [0,1]
+          : winrate + puct);
         assert(value > std::numeric_limits<double>::lowest());
 
         if (value > best_value) {

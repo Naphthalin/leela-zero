@@ -126,6 +126,7 @@ extern bool cfg_benchmark;
 extern double cfg_betamcts_trust;
 extern double cfg_betamcts_percentile;
 extern double cfg_betamcts_lcb;
+extern bool cfg_use_logitQ;
 extern bool cfg_use_new_ucb;
 extern bool cfg_cpu_only;
 extern AnalyzeTags cfg_analyze_tags;

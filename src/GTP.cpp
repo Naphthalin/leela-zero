@@ -101,6 +101,7 @@ bool cfg_benchmark;
 double cfg_betamcts_trust;
 double cfg_betamcts_percentile;
 double cfg_betamcts_lcb;
+bool cfg_use_logitQ;
 bool cfg_use_new_ucb;
 bool cfg_cpu_only;
 AnalyzeTags cfg_analyze_tags;
@@ -367,6 +368,7 @@ void GTP::setup_default_parameters() {
     cfg_betamcts_trust = 0.1f;
     cfg_betamcts_percentile = 0.05f;
     cfg_betamcts_lcb = 0.2f;
+    cfg_use_logitQ = false;
     cfg_use_new_ucb = false;
 #ifdef USE_CPU_ONLY
     cfg_cpu_only = true;

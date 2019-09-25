@@ -167,6 +167,7 @@ static void parse_commandline(int argc, char *argv[]) {
                       "Beta distribution percentile for betamcts")
         ("betamcts-lcb", po::value<double>()->default_value(0.2),
                       "LCB percentile for best move in betamcts")
+        ("use-logitQ", "Flag for using logit Q transformation")
         ("use-new-ucb", "Flag for using new UCB formula")
 
 #ifndef USE_CPU_ONLY
@@ -504,6 +505,11 @@ static void parse_commandline(int argc, char *argv[]) {
             cfg_betamcts_lcb = 0.5;
         }
     }
+
+    if (vm.count("use-logitQ")) {
+        cfg_use_logitQ = true;
+    }
+
 
     if (vm.count("use-new-ucb")) {
         cfg_use_new_ucb = true;
