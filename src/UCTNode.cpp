@@ -423,24 +423,16 @@ UCTNode* UCTNode::uct_select_child(int color, bool is_root) {
     // Count parentvisits manually to avoid issues with transpositions.
     auto total_visited_policy = 0.0f;
     auto parentvisits = size_t{0};
-    // Get highest child eval for fpu_reduction
-    auto eval = 0.0f;
-    auto best_eval = std::numeric_limits<double>::lowest();
+
     for (const auto& child : m_children) {
         if (child.valid()) {
             parentvisits += child.get_visits();
             if (child.get_visits() > 0) {
                 total_visited_policy += child.get_policy();
-                eval = child.get_eval_betamcts(color);
-                if (eval > best_eval) {
-                    best_eval = eval;
-                }
             }
         }
     }
-    if (parentvisits == 0) {
-        best_eval = get_net_eval(color);
-    }
+
     // use effective parent visits
     parentvisits = get_visits_betamcts();
 
@@ -453,16 +445,17 @@ UCTNode* UCTNode::uct_select_child(int color, bool is_root) {
               std::log(cfg_logpuct * double(parentvisits) + cfg_logconst));
     }
 
+    // use parent's eval for fpu
     const auto fpu_reduction = (is_root ? cfg_fpu_root_reduction : cfg_fpu_reduction) * std::sqrt(total_visited_policy);
     // Estimated eval for unknown nodes = original parent NN eval - reduction
-    const auto best_eval_transformed = 2.0 * best_eval - 1.0;
+    const auto eval_transformed = 2.0 * get_raw_eval(color) - 1.0;
     // use eval of best child instead of net_eval
-    const auto fpu_eval = (cfg_use_logitQ && (best_eval_transformed > -1.0 && best_eval_transformed < 1.0) ?
+    const auto fpu_eval = (cfg_use_logitQ && (eval_transformed > -1.0 && eval_transformed < 1.0) ?
       // get_net_eval(color) - fpu_reduction
       // treating fpu_reduction properly needs higher fpu_reduction value for extreme Q
-      0.5 + 0.5 * (best_eval_transformed - tanh(fpu_reduction)) / (1.0 - best_eval_transformed * tanh(fpu_reduction))
+      0.5 + 0.5 * (eval_transformed - tanh(fpu_reduction)) / (1.0 - eval_transformed * tanh(fpu_reduction))
       // this is a simplification of tanh(atanh(Q)-fpu), scaled from Q in [-1,1] to winrate in [0,1]
-      : best_eval - fpu_reduction);
+      : get_raw_eval(color) - fpu_reduction);
 
     auto best = static_cast<UCTNodePointer*>(nullptr);
     auto best_value = std::numeric_limits<double>::lowest();
