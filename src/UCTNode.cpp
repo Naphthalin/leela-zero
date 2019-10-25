@@ -434,7 +434,8 @@ UCTNode* UCTNode::uct_select_child(int color, bool is_root) {
     }
 
     // use effective parent visits
-    parentvisits = get_visits_betamcts();
+    // this focuses too much on already explored moves!
+    // parentvisits = get_visits_betamcts();
 
     double numerator = 1.0;
     // if trying EatNow's UCT modification
@@ -479,7 +480,9 @@ UCTNode* UCTNode::uct_select_child(int color, bool is_root) {
         // const auto denom = 1.0 + child.get_visits();
         auto denom = 1.0 + child.get_visits();
         if (child.get_visits() > 0) {
-            denom = 1.0 + child.get_visits_betamcts();
+            denom = 1.0 + child.get_visits();
+            // this focuses search too much on already explored moves
+            // denom = 1.0 + child.get_visits_betamcts();
         }
         // if trying EatNow's UCT modification
         const auto puct = cfg_use_new_ucb ? cfg_puct_new_ucb * psa * (numerator / denom) / sqrt(denom)
